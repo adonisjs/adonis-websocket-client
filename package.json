@@ -1,0 +1,51 @@
+{
+  "name": "adonis-websocket-client",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/ws.js",
+  "directories": {},
+  "scripts": {
+    "pretest": "node test/server/start.js start",
+    "posttest": "node test/server/start.js stop",
+    "prepublish": "webpack",
+    "test:local": "npm run lint && zuul --local 8080 -- test/*.spec.js",
+    "test": "npm run lint && zuul --phantom -- test/*.spec.js",
+    "lint": "standard src/**/*.js test/*.js index.js"
+  },
+  "author": "amanvirk,adonisjs",
+  "license": "MIT",
+  "devDependencies": {
+    "babel-core": "^6.18.2",
+    "babel-loader": "^6.2.8",
+    "babel-preset-latest": "^6.16.0",
+    "chai": "^3.5.0",
+    "coveralls": "^2.11.15",
+    "cz-conventional-changelog": "^1.2.0",
+    "daemonize2": "^0.4.2",
+    "istanbul": "^0.4.5",
+    "mocha": "^3.2.0",
+    "phantomjs": "^2.1.7",
+    "socket.io": "^1.7.1",
+    "standard": "^8.6.0",
+    "webpack": "^1.13.3",
+    "zuul": "^3.11.1",
+    "zuul-builder-webpack": "^1.2.0"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  },
+  "standard": {
+    "global": [
+      "it",
+      "before",
+      "describe"
+    ]
+  },
+  "dependencies": {
+    "base-64": "^0.1.0",
+    "lodash": "^4.17.2",
+    "socket.io-client": "^1.7.1"
+  }
+}
