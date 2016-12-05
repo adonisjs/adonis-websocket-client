@@ -1,5 +1,9 @@
 # Adonis WebSocket Client
 
+[![Sauce Test Status](https://saucelabs.com/browser-matrix/amanvirk.svg)](https://saucelabs.com/u/amanvirk)
+
+
+
 ```javascript
 const Ws = require('adonis-websocket-client')
 const io = Ws('http://localhost') // base url

@@ -14,7 +14,7 @@ const Channel = require('../src/Channel')
 const io = require('socket.io-client')
 const chai = require('chai')
 const assert = chai.assert
-const baseUrl = 'http://localhost:4000'
+const baseUrl = ''
 
 describe('Ws', function () {
   it('should return channel instance using the channel method', function () {

@@ -5,11 +5,10 @@
   "main": "dist/ws.js",
   "directories": {},
   "scripts": {
-    "pretest": "node test/server/start.js start",
-    "posttest": "node test/server/start.js stop",
     "prepublish": "webpack",
     "test:local": "npm run lint && zuul --local 8080 -- test/*.spec.js",
-    "test": "npm run lint && zuul --phantom -- test/*.spec.js",
+    "test": "npm run lint && zuul -- test/*.spec.js",
+    "test:phantom": "npm run lint && zuul --phantom -- test/*.spec.js",
     "lint": "standard src/**/*.js test/*.js index.js"
   },
   "author": "amanvirk,adonisjs",

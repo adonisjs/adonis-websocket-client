@@ -9,8 +9,7 @@
  * file that was distributed with this source code.
 */
 
-const server = require('http').createServer(function () {})
-const io = require('socket.io')(server)
+const io = require('socket.io')(process.env.ZUUL_PORT)
 io.on('connection', (socket) => {
 
   if (socket.request._query.token) {
@@ -30,4 +29,3 @@ io.on('connection', (socket) => {
     socket.emit('received:leave:ad:room', payload)
   })
 })
-server.listen(4000)

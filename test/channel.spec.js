@@ -13,7 +13,7 @@ const Channel = require('../src/Channel')
 const io = require('socket.io-client')
 const chai = require('chai')
 const assert = chai.assert
-const baseUrl = 'http://localhost:4000'
+const baseUrl = ''
 
 describe('Channel', function () {
   it('should initiate a new channel', function () {
@@ -25,7 +25,7 @@ describe('Channel', function () {
     this.timeout(7000)
     const channel = new Channel(io, baseUrl, '/hello', {})
     channel.connect(function (error, connected) {
-      assert.equal(error, 'Invalid namespace')
+      assert.equal(error.message, 'xhr poll error')
       assert.equal(connected, false)
       channel.disconnect()
       done()
