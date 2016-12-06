@@ -16,6 +16,8 @@ const chai = require('chai')
 const assert = chai.assert
 const baseUrl = ''
 
+global.mocha.checkLeaks = false
+
 describe('Ws', function () {
   it('should return channel instance using the channel method', function () {
     const Ws = new WsManager(io)

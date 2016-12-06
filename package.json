@@ -28,7 +28,8 @@
     "standard": "^8.6.0",
     "webpack": "^1.13.3",
     "zuul": "^3.11.1",
-    "zuul-builder-webpack": "^1.2.0"
+    "zuul-builder-webpack": "^1.2.0",
+    "zuul-ngrok": "^4.0.0"
   },
   "config": {
     "commitizen": {

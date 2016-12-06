@@ -15,6 +15,8 @@ const chai = require('chai')
 const assert = chai.assert
 const baseUrl = ''
 
+global.mocha.checkLeaks = false
+
 describe('Channel', function () {
   it('should initiate a new channel', function () {
     const channel = new Channel('/foo', {})
@@ -25,7 +27,7 @@ describe('Channel', function () {
     this.timeout(7000)
     const channel = new Channel(io, baseUrl, '/hello', {})
     channel.connect(function (error, connected) {
-      assert.equal(error.message, 'xhr poll error')
+      assert.match(error.message, /poll error/)
       assert.equal(connected, false)
       channel.disconnect()
       done()
