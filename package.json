@@ -5,7 +5,7 @@
   "main": "dist/ws.js",
   "directories": {},
   "scripts": {
-    "prepublish": "webpack -p --config ./webpack.production.config.js",
+    "prepublish": "webpack && webpack -p --config ./webpack.production.config.js",
     "test:local": "npm run lint && zuul --local 8080 -- test/*.spec.js",
     "test": "npm run lint && zuul -- test/*.spec.js",
     "test:phantom": "npm run lint && zuul --phantom -- test/*.spec.js",
