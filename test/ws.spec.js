@@ -19,6 +19,7 @@ const baseUrl = ''
 global.mocha.checkLeaks = false
 
 describe('Ws', function () {
+  this.timeout(7000)
   it('should return channel instance using the channel method', function () {
     const Ws = new WsManager(io)
     const ws = Ws(baseUrl)

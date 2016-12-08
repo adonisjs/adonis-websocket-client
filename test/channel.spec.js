@@ -18,16 +18,20 @@ const baseUrl = ''
 global.mocha.checkLeaks = false
 
 describe('Channel', function () {
+  this.timeout(7000)
   it('should initiate a new channel', function () {
     const channel = new Channel('/foo', {})
     assert.instanceOf(channel, Channel)
   })
 
   it('should return XHR error when trying to connect to undefined namespace', function (done) {
-    this.timeout(7000)
-    const channel = new Channel(io, baseUrl, '/hello', {})
+    const channel = new Channel(io, baseUrl, '/hello', {timeout: 6000})
     channel.connect(function (error, connected) {
-      assert.match(error.message, /poll error/)
+      if (error.message) {
+        assert.match(error.message, /poll error/)
+      } else {
+        assert.match(error, 'timeout')
+      }
       assert.equal(connected, false)
       channel.disconnect()
       done()
@@ -35,7 +39,6 @@ describe('Channel', function () {
   })
 
   it('should connect to the channel namespace when connect method is called', function (done) {
-    this.timeout(7000)
     const channel = new Channel(io, baseUrl, '/', {})
     channel.connect(function (error, connected) {
       assert.isNull(error)
@@ -46,7 +49,6 @@ describe('Channel', function () {
   })
 
   it('should emit join:ad:room event when joinRoom method is called', function (done) {
-    this.timeout(7000)
     const channel = new Channel(io, baseUrl, '/', {})
     channel.connect(function () {
       channel.on('received:join:ad:room', function (payload) {
@@ -59,7 +61,6 @@ describe('Channel', function () {
   })
 
   it('should emit leave:ad:room event when leaveRoom method is called', function (done) {
-    this.timeout(7000)
     const channel = new Channel(io, baseUrl, '/', {})
     channel.connect(function () {
       channel.on('received:leave:ad:room', function (payload) {
@@ -72,7 +73,6 @@ describe('Channel', function () {
   })
 
   it('should pass the jwt token as query param when withJwt is called', function (done) {
-    this.timeout(7000)
     const channel = new Channel(io, baseUrl, '/', {})
     channel.withJwt('foobar').connect()
     channel.on('received:jwt', function () {
@@ -82,7 +82,6 @@ describe('Channel', function () {
   })
 
   it('should pass the api token as query param when withApi is called', function (done) {
-    this.timeout(7000)
     const channel = new Channel(io, baseUrl, '/', {})
     channel.withApiKey('foobar').connect()
     channel.on('received:api', function () {
@@ -92,7 +91,6 @@ describe('Channel', function () {
   })
 
   it('should pass the basic auth credentials with withBasicAuth method is called', function (done) {
-    this.timeout(7000)
     const channel = new Channel(io, baseUrl, '/', {})
     channel.withBasicAuth('foo', 'bar').connect()
     channel.on('received:basic:auth', function (basicAuthString) {
