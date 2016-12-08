@@ -12,3 +12,4 @@ examples
 .babelrc
 webpack.config.js
 zuul.config.js
+bower_components

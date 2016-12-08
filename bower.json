@@ -1,0 +1,34 @@
+{
+  "name": "adonis-websocket-client",
+  "description": "Websocket client for AdonisJs framework",
+  "main": "dist/ws.js",
+  "authors": [
+    "amanvirk",
+    "adonisjs"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "adonisjs",
+    "socket.io",
+    "websocket"
+  ],
+  "homepage": "https://github.com/adonisjs/adonis-websocket-client",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests",
+    "coverage",
+    ".DS_Store",
+    "npm-debug.log",
+    ".travis.yml",
+    ".editorconfig",
+    "benchmarks",
+    "src",
+    "examples",
+    "zuul.config.js",
+    ".babelrc"
+    "webpack.config.js"
+  ]
+}
