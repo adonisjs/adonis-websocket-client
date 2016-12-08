@@ -17,7 +17,9 @@
 </p>
 
 <p align="center">
-  [![Sauce Test Status](https://saucelabs.com/browser-matrix/amanvirk.svg)](https://saucelabs.com/u/amanvirk)
+  <a href="https://saucelabs.com/u/amanvirk">
+    <img src="https://saucelabs.com/browser-matrix/amanvirk.svg" />
+  </a>
 </p>
 
 <br>
