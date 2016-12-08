@@ -1,11 +1,11 @@
 {
   "name": "adonis-websocket-client",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "dist/ws.js",
   "directories": {},
   "scripts": {
-    "prepublish": "webpack",
+    "prepublish": "webpack && webpack -p --config ./webpack.production.config.js",
     "test:local": "npm run lint && zuul --local 8080 -- test/*.spec.js",
     "test": "npm run lint && zuul -- test/*.spec.js",
     "test:phantom": "npm run lint && zuul --phantom -- test/*.spec.js",
