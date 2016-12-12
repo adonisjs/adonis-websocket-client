@@ -18,7 +18,7 @@ const baseUrl = ''
 global.mocha.checkLeaks = false
 
 describe('Channel', function () {
-  this.timeout(7000)
+  this.timeout(70000)
   it('should initiate a new channel', function () {
     const channel = new Channel('/foo', {})
     assert.instanceOf(channel, Channel)
@@ -43,6 +43,42 @@ describe('Channel', function () {
     channel.connect(function (error, connected) {
       assert.isNull(error)
       assert.equal(connected, true)
+      channel.disconnect()
+      done()
+    })
+  })
+
+  it('should have nsp property when connected to a channel', function (done) {
+    const channel = new Channel(io, baseUrl, '/', {})
+    channel.connect(function () {
+      assert.equal(channel.name, '/')
+      channel.disconnect()
+      done()
+    })
+  })
+
+  it('should get a unique id when connected to a channel', function (done) {
+    const channel = new Channel(io, baseUrl, '/', {})
+    channel.connect(function () {
+      assert.isDefined(channel.id)
+      channel.disconnect()
+      done()
+    })
+  })
+
+  it('should have channel namespace prepended to the id', function (done) {
+    const channel = new Channel(io, baseUrl, 'chat', {})
+    channel.connect(function () {
+      assert.equal(/^\/chat#\w+/.test(channel.id), true)
+      channel.disconnect()
+      done()
+    })
+  })
+
+  it('should not have channel namespace prepended to the id when nsp is /', function (done) {
+    const channel = new Channel(io, baseUrl, '/', {})
+    channel.connect(function () {
+      assert.notEqual(channel.id.substr(0, 1), '/')
       channel.disconnect()
       done()
     })

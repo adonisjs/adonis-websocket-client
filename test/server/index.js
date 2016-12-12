@@ -10,6 +10,7 @@
 */
 
 const io = require('socket.io')(process.env.ZUUL_PORT)
+io.of('/chat')
 io.on('connection', (socket) => {
 
   if (socket.request._query.token) {

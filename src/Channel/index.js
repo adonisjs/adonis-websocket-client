@@ -27,6 +27,25 @@ class Channel {
   }
 
   /**
+   * Returns the socket id with prepended nsp when
+   * nsp is not /
+   *
+   * @return {String}
+   */
+  get id () {
+    return this.name !== '/' ? `${this.name}#${this._io.id}` : this._io.id
+  }
+
+  /**
+   * Retuns channel namespace
+   *
+   * @return {String}
+   */
+  get name () {
+    return this._io.nsp
+  }
+
+  /**
    * Report connection error until already
    * reported.
    *
