@@ -18,7 +18,7 @@ const baseUrl = ''
 global.mocha.checkLeaks = false
 
 describe('Channel', function () {
-  this.timeout(7000)
+  this.timeout(70000)
   it('should initiate a new channel', function () {
     const channel = new Channel('/foo', {})
     assert.instanceOf(channel, Channel)
