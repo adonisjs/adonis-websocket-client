@@ -28,7 +28,7 @@
     "src",
     "examples",
     "zuul.config.js",
-    ".babelrc"
+    ".babelrc",
     "webpack.config.js"
   ]
 }
