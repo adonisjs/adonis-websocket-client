@@ -46,6 +46,6 @@
   "dependencies": {
     "base-64": "^0.1.0",
     "lodash": "^4.17.2",
-    "socket.io-client": "^1.7.2"
+    "socket.io-client": "^2.0.0"
   }
 }
