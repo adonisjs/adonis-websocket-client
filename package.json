@@ -17,7 +17,7 @@
     "babel-core": "^6.20.0",
     "babel-loader": "^6.2.9",
     "babel-preset-latest": "^6.16.0",
-    "chai": "^3.5.0",
+    "chai": "^4.0.0",
     "coveralls": "^2.11.15",
     "cz-conventional-changelog": "^1.2.0",
     "daemonize2": "^0.4.2",
