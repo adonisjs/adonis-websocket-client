@@ -18,7 +18,7 @@
     "babel-loader": "^6.2.9",
     "babel-preset-latest": "^6.16.0",
     "chai": "^3.5.0",
-    "coveralls": "^2.11.15",
+    "coveralls": "^3.0.0",
     "cz-conventional-changelog": "^1.2.0",
     "daemonize2": "^0.4.2",
     "istanbul": "^0.4.5",
