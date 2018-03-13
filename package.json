@@ -6,8 +6,12 @@
   "module": "dist/Ws.es.js",
   "browser": "dist/Ws.browser.js",
   "scripts": {
+    "lint": "standard",
     "build": "rollup -c",
-    "test": "karma start"
+    "prepublishOnly": "npm run build",
+    "pretest": "npm run lint",
+    "test:karma": "karma start",
+    "test": "node ./bin/test.js"
   },
   "keywords": [
     "websocket",

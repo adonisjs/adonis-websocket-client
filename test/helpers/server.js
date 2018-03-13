@@ -54,6 +54,8 @@ function handleLeave (packet, ws) {
   }
 }
 
+process.on('SIGTERM', () => wss.close())
+
 wss.on('connection', function connection (ws, req) {
   ws.send(JSON.stringify({ t: Packets.codes.OPEN, d: { clientInterval: 1000 } }))
   ws.on('error', function (error) {
