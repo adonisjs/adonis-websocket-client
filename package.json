@@ -34,6 +34,7 @@
     "karma-japa": "^1.0.2",
     "karma-rollup-preprocessor": "^5.1.1",
     "karma-sourcemap-loader": "^0.3.7",
+    "puppeteer": "^1.1.1",
     "rollup": "^0.56.5",
     "rollup-plugin-babel": "^3.0.3",
     "rollup-plugin-commonjs": "^9.0.0",
