@@ -48,7 +48,7 @@
   "dependencies": {
     "@adonisjs/websocket-packet": "^1.0.4",
     "emittery": "^0.3.0",
-    "query-string": "^5.1.0"
+    "query-string": "^6.0.0"
   },
   "standard": {
     "globals": [
