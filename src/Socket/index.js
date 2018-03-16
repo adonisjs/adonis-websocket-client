@@ -63,7 +63,7 @@ export default class Socket {
    */
   joinAck () {
     this.state = 'open'
-    this.emitter.emit('ready')
+    this.emitter.emit('ready', this)
 
     /**
      * Process queued events, before the subscription was ready
