@@ -263,40 +263,20 @@ export default class Connection extends Emitter {
    * @private
    */
   _onClose (event) {
-    this.ws = null
     clearInterval(this._pingTimer)
+
+    this.ws = null
     this._pingTimer = null
 
-    /**
-     * Terminate completely
-     */
-    if (!this.shouldReconnect) {
-      this._subscriptionsIterator((subscription) => subscription.terminate())
-      this
-        .emit('close', this)
-        .then(() => {
-          this.clearListeners()
-        })
-        .catch(() => {
-          this.clearListeners()
-        })
-      return
-    }
+    this._subscriptionsIterator((subscription) => subscription.terminate())
 
-    /**
-     * Keep subscriptions in pending state
-     */
-    this._subscriptionsIterator((subscription) => subscription.reconnecting())
-
-    /**
-     * Emit close and then reconnect
-     */
     this
       .emit('close', this)
       .then(() => {
-        this._reconnect()
-      }).catch(() => {
-        this._reconnect()
+        this.shouldReconnect ? this._reconnect() : this.clearListeners()
+      })
+      .catch(() => {
+        this.shouldReconnect ? this._reconnect() : this.clearListeners()
       })
   }
 
@@ -611,7 +591,6 @@ export default class Connection extends Emitter {
      * Sending join request to the server, the subscription will
      * be considered ready, once server acknowledges it
      */
-    console.log('this._connectionState', this._connectionState)
     if (this._connectionState === 'open') {
       this.sendPacket(wsp.joinPacket(topic))
     }

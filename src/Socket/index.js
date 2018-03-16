@@ -212,19 +212,6 @@ export default class Socket {
   }
 
   /**
-   * Connection is trying to reconnect with the server,
-   * so we have to move subscription to pending state
-   *
-   * @method reconnecting
-   *
-   * @return {void}
-   */
-  reconnecting () {
-    this.state = 'pending'
-    this.emitter.emit('close', this)
-  }
-
-  /**
    * Sends the request on server to close the subscription, we
    * have to wait for acknowledgment too
    *
