@@ -34,19 +34,19 @@
     "karma-japa": "^1.0.2",
     "karma-rollup-preprocessor": "^5.1.1",
     "karma-sourcemap-loader": "^0.3.7",
-    "puppeteer": "^1.1.1",
+    "puppeteer": "^1.2.0",
     "rollup": "^0.57.0",
     "rollup-plugin-babel": "^3.0.3",
-    "rollup-plugin-commonjs": "^9.0.0",
+    "rollup-plugin-commonjs": "^9.1.0",
     "rollup-plugin-node-resolve": "^3.2.0",
     "rollup-plugin-strip": "^1.1.1",
     "rollup-plugin-strip-code": "^0.2.5",
     "rollup-plugin-uglify": "^3.0.0",
-    "standard": "^11.0.0",
+    "standard": "^11.0.1",
     "ws": "^5.0.0"
   },
   "dependencies": {
-    "@adonisjs/websocket-packet": "^1.0.4",
+    "@adonisjs/websocket-packet": "^1.0.6",
     "emittery": "^0.3.0",
     "query-string": "^6.0.0"
   },
