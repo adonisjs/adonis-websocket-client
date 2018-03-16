@@ -375,6 +375,11 @@ export default class Connection extends Emitter {
       return
     }
 
+    if (wsp.isPongPacket(packet)) {
+      debug('pong packet')
+      return
+    }
+
     debug('invalid packet type %d', packet.t)
   }
 
