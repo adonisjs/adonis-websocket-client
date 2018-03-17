@@ -21,6 +21,16 @@ import debug from '../Debug'
 import Socket from '../Socket/index.js'
 import JsonEncoder from '../JsonEncoder/index.js'
 
+/**
+ * Connection class is used to make a TCP/Socket connection
+ * with the server. It relies on Native Websocket browser
+ * support.
+ *
+ * @class Connection
+ *
+ * @param {String} url
+ * @param {Object} options
+ */
 export default class Connection extends Emitter {
   constructor (url, options) {
     super()
@@ -56,20 +66,6 @@ export default class Connection extends Emitter {
     this._reconnectionAttempts = 0
 
     /**
-     * Base URL for the websocket connection
-     *
-     * @type {String}
-     */
-    this.url = `${url.replace(/\/$/, '')}/${this.options.path}`
-
-    /**
-     * Subscriptions for a single connection
-     *
-     * @type {Object}
-     */
-    this.subscriptions = {}
-
-    /**
      * All packets are sent in sequence to the server. So we need to
      * maintain a queue and process one at a time
      *
@@ -101,6 +97,20 @@ export default class Connection extends Emitter {
     this._extendedQuery = {}
 
     /**
+     * Base URL for the websocket connection
+     *
+     * @type {String}
+     */
+    this._url = `${url.replace(/\/$/, '')}/${this.options.path}`
+
+    /**
+     * Subscriptions for a single connection
+     *
+     * @type {Object}
+     */
+    this.subscriptions = {}
+
+    /**
      * Handler called when `close` is emitted from the
      * subscription
      */
@@ -123,6 +133,21 @@ export default class Connection extends Emitter {
   }
 
   /**
+   * Clean references
+   *
+   * @method _cleanup
+   *
+   * @return {void}
+   *
+   * @private
+   */
+  _cleanup () {
+    clearInterval(this._pingTimer)
+    this.ws = null
+    this._pingTimer = null
+  }
+
+  /**
    * Calls a callback passing subscription to it
    *
    * @method _subscriptionsIterator
@@ -134,9 +159,7 @@ export default class Connection extends Emitter {
    * @private
    */
   _subscriptionsIterator (callback) {
-    Object.keys(this.subscriptions).forEach((sub) => {
-      callback(this.subscriptions[sub], sub)
-    })
+    Object.keys(this.subscriptions).forEach((sub) => callback(this.subscriptions[sub], sub))
   }
 
   /**
@@ -156,7 +179,7 @@ export default class Connection extends Emitter {
     const socket = this.getSubscription(packet.d.topic)
 
     if (!socket) {
-      debug('cannot acknowledge join since topic has no subscription %j', packet)
+      debug('cannot consume packet since %s topic has no active subscription %j', packet.d.topic, packet)
       return
     }
 
@@ -228,6 +251,7 @@ export default class Connection extends Emitter {
    * @private
    */
   _onError (event) {
+    debug('error %O', event)
     this._subscriptionsIterator((subscription) => (subscription.serverError()))
     this.emit('error', event)
   }
@@ -245,8 +269,9 @@ export default class Connection extends Emitter {
   _reconnect () {
     this._reconnectionAttempts++
 
-    const timer = setTimeout(() => {
-      clearTimeout(timer)
+    this.emit('reconnect', this._reconnectionAttempts)
+
+    setTimeout(() => {
       this._connectionState = 'reconnect'
       this.connect()
     }, this.options.reconnectionDelay * this._reconnectionAttempts)
@@ -264,11 +289,11 @@ export default class Connection extends Emitter {
    * @private
    */
   _onClose (event) {
-    clearInterval(this._pingTimer)
+    this._cleanup()
 
-    this.ws = null
-    this._pingTimer = null
-
+    /**
+     * Force subscriptions to terminate
+     */
     this._subscriptionsIterator((subscription) => subscription.terminate())
 
     this
@@ -391,6 +416,7 @@ export default class Connection extends Emitter {
     /**
      * Sending packets to make pending subscriptions
      */
+    debug('processing pre connection subscriptions')
     this._subscriptionsIterator((subscription) => {
       this.sendPacket(wsp.joinPacket(subscription.topic))
     })
@@ -495,7 +521,7 @@ export default class Connection extends Emitter {
    */
   connect () {
     const query = stringify(extend({}, this.options.query, this._extendedQuery))
-    const url = query ? `${this.url}?${query}` : this.url
+    const url = query ? `${this._url}?${query}` : this._url
 
     debug('creating socket connection on %s url', url)
 

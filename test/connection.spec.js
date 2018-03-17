@@ -10,31 +10,22 @@
 */
 
 import adonisWs from '../index.js'
+import { BaseSocket, wrapAssert, waitFor, waitForNextTick } from './helpers/index'
 
 group('Connection', (group) => {
   group.afterEach(() => {
     return new Promise((resolve) => {
-      window.connection.on('close', () => {
-        console.log('closing')
-        resolve()
-      })
+      window.connection.on('close', resolve)
       window.connection.terminate()
     })
   })
 
-  test('make a new websocket connection to the server', (assert, done) => {
+  test('make a new websocket connection to the server', async (assert) => {
     assert.plan(1)
-
     window.connection = adonisWs('ws://localhost:8080').connect()
 
-    window.connection.on('open', function (payload) {
-      try {
-        assert.property(payload, 'clientInterval')
-        done()
-      } catch (error) {
-        done(error)
-      }
-    })
+    const payload = await waitFor('open', window.connection)
+    assert.property(payload, 'clientInterval')
   })
 
   test('invoke joinAck on socket when join ack is received from server', (assert, done) => {
@@ -42,22 +33,15 @@ group('Connection', (group) => {
 
     window.connection = adonisWs('ws://localhost:8080').connect()
 
-    class FakeSocket {
-      constructor () {
-        this.topic = 'chat'
-      }
-
+    class FakeSocket extends BaseSocket {
       joinAck () {
-        try {
+        wrapAssert(done, () => {
           assert.isTrue(true)
-          done()
-        } catch (error) {
-          done(error)
-        }
+        })
       }
     }
 
-    window.connection.subscriptions.chat = new FakeSocket()
+    window.connection.subscriptions.chat = new FakeSocket('chat')
   })
 
   test('invoke joinError on socket when join error is received from server', (assert, done) => {
@@ -65,22 +49,15 @@ group('Connection', (group) => {
 
     window.connection = adonisWs('ws://localhost:8080').connect()
 
-    class FakeSocket {
-      constructor () {
-        this.topic = 'badjoin'
-      }
-
+    class FakeSocket extends BaseSocket {
       joinError (packet) {
-        try {
+        wrapAssert(done, () => {
           assert.deepEqual(packet, { topic: 'badjoin', message: 'Cannot subscribe' })
-          done()
-        } catch (error) {
-          done(error)
-        }
+        })
       }
     }
 
-    window.connection.subscriptions.badjoin = new FakeSocket()
+    window.connection.subscriptions.badjoin = new FakeSocket('badjoin')
   })
 
   test('invoke leaveAck on socket when leave ack packet is received', (assert, done) => {
@@ -88,20 +65,15 @@ group('Connection', (group) => {
 
     window.connection = adonisWs('ws://localhost:8080').connect()
 
-    class FakeSocket {
-      constructor () {
-        this.topic = 'serverleave'
-      }
-
-      joinAck () {}
-
+    class FakeSocket extends BaseSocket {
       leaveAck () {
-        assert.isTrue(true)
-        done()
+        wrapAssert(done, () => {
+          assert.isTrue(true)
+        })
       }
     }
 
-    window.connection.subscriptions.serverleave = new FakeSocket()
+    window.connection.subscriptions.serverleave = new FakeSocket('serverleave')
   })
 
   test('invoke serverEvent method on socket when event from server is received', (assert, done) => {
@@ -114,135 +86,78 @@ group('Connection', (group) => {
       }
     }).connect()
 
-    class FakeSocket {
-      constructor () {
-        this.topic = 'chat'
-      }
-
-      joinAck () {}
-
+    class FakeSocket extends BaseSocket {
       serverEvent (packet) {
-        try {
+        wrapAssert(done, () => {
           assert.deepEqual(packet, { topic: 'chat', event: 'greeting', data: 'Hello world' })
-          done()
-        } catch (error) {
-          done(error)
-        }
+        })
       }
     }
 
-    window.connection.subscriptions.chat = new FakeSocket()
+    window.connection.subscriptions.chat = new FakeSocket('chat')
   })
 
-  test('send join request on server', (assert, done) => {
-    assert.plan(1)
-
+  test('send join request on server', async (assert) => {
     window.connection = adonisWs('ws://localhost:8080').connect()
+    await waitFor('open', window.connection)
 
-    window.connection.on('open', () => {
-      const subscription = window.connection.subscribe('chat')
-      subscription.on('ready', () => {
-        try {
-          assert.deepEqual(window.connection.subscriptions, { 'chat': subscription })
-          done()
-        } catch (error) {
-          done(error)
-        }
-      })
-    })
+    const subscription = window.connection.subscribe('chat')
+    await waitFor('ready', subscription)
+
+    assert.deepEqual(window.connection.subscriptions, { 'chat': subscription })
   })
 
-  test('remove subscriptions when join is errored out from server', (assert, done) => {
+  test('remove subscriptions when join is errored out from server', async (assert) => {
     assert.plan(2)
 
     window.connection = adonisWs('ws://localhost:8080').connect()
+    await waitFor('open', window.connection)
 
-    window.connection.on('open', () => {
-      const subscription = window.connection.subscribe('badjoin')
-      subscription.on('error', () => {
-        setTimeout(() => {
-          try {
-            assert.deepEqual(window.connection.subscriptions, {})
-            assert.equal(subscription.emitter.listenerCount(), 0)
-            done()
-          } catch (error) {
-            done(error)
-          }
-        })
-      })
-    })
+    const subscription = window.connection.subscribe('badjoin')
+    await waitFor('error', subscription)
+
+    await waitForNextTick()
+    assert.deepEqual(window.connection.subscriptions, {})
+    assert.equal(subscription.emitter.listenerCount(), 0)
   })
 
-  test('send leave request when close is called on subscription', (assert, done) => {
-    assert.plan(1)
-
+  test('send leave request when close is called on subscription', async (assert) => {
     window.connection = adonisWs('ws://localhost:8080').connect()
+    await waitFor('open', window.connection)
 
-    window.connection.on('open', () => {
-      const subscription = window.connection.subscribe('chat')
-      subscription.on('ready', () => {
-        subscription.close()
-      })
+    const subscription = window.connection.subscribe('chat')
+    await waitFor('ready', subscription)
+    subscription.close()
 
-      subscription.on('close', () => {
-        try {
-          assert.deepEqual(window.connection.subscriptions, {})
-          done()
-        } catch (error) {
-          done(error)
-        }
-      })
-    })
+    await waitFor('close', subscription)
+    assert.deepEqual(window.connection.subscriptions, {})
   })
 
-  test('emit leaveError when server denies to unsubscribe from the topic', (assert, done) => {
-    assert.plan(2)
-
+  test('emit leaveError when server denies to unsubscribe from the topic', async (assert) => {
     window.connection = adonisWs('ws://localhost:8080').connect()
+    await waitFor('open', window.connection)
 
-    window.connection.on('open', () => {
-      const subscription = window.connection.subscribe('badleave')
-      subscription.on('ready', () => {
-        subscription.close()
-      })
+    const subscription = window.connection.subscribe('badleave')
+    await waitFor('ready', subscription)
+    subscription.close()
 
-      subscription.on('close', () => {
-        assert.throw('Never expected it to be called')
-        done()
-      })
-
-      subscription.on('leaveError', () => {
-        try {
-          assert.deepEqual(window.connection.subscriptions, { badleave: subscription })
-          assert.equal(subscription.state, 'closing')
-          done()
-        } catch (error) {
-          done(error)
-        }
-      })
-    })
+    await waitFor('leaveError', subscription)
+    assert.deepEqual(window.connection.subscriptions, { badleave: subscription })
+    assert.equal(subscription.state, 'closing')
   })
 
-  test('close subscription when server initiates the subscription leave', (assert, done) => {
-    assert.plan(2)
-
+  test('close subscription when server initiates the subscription leave', async (assert) => {
     window.connection = adonisWs('ws://localhost:8080').connect()
+    await waitFor('open', window.connection)
 
-    window.connection.on('open', () => {
-      const subscription = window.connection.subscribe('serverleave')
-      subscription.on('close', () => {
-        try {
-          assert.deepEqual(window.connection.subscriptions, {})
-          assert.equal(subscription.state, 'closed')
-          done()
-        } catch (error) {
-          done(error)
-        }
-      })
-    })
+    const subscription = window.connection.subscribe('serverleave')
+    await waitFor('close', subscription)
+
+    assert.deepEqual(window.connection.subscriptions, {})
+    assert.equal(subscription.state, 'closed')
   })
 
-  test('do not send subscription packet unless connected to the server', (assert, done) => {
+  test('do not send subscription packet unless connected to the server', (assert) => {
     window.connection = adonisWs('ws://localhost:8080')
 
     window.connection.sendPacket = function (packet) {
@@ -250,7 +165,6 @@ group('Connection', (group) => {
     }
 
     window.connection.subscribe('chat')
-    done()
   })
 
   test('attempt to reconnect when connection closes unexpectedly', (assert, done) => {
@@ -265,7 +179,7 @@ group('Connection', (group) => {
     }
   })
 
-  test('do not attempt to reconnect when terminated from client', (assert, done) => {
+  test('do not attempt to reconnect when terminated from client', async (assert) => {
     window.connection = adonisWs('ws://localhost:8080').connect()
 
     window.connection._reconnect = function () {
@@ -273,11 +187,13 @@ group('Connection', (group) => {
     }
 
     window.connection.close()
-    setTimeout(() => {
-      done()
-    }, 400)
+    await waitForNextTick(400)
   })
 
+  /**
+   * Since we want to confirm the events order, do not await them,
+   * otherwise they will be in the order we are awaiting them.
+   */
   test('emit right set of events in correct order', (assert, done) => {
     const events = []
     window.connection = adonisWs('ws://localhost:8080')
@@ -288,13 +204,10 @@ group('Connection', (group) => {
 
     window.connection.on('close', () => {
       events.push('connection:close')
-      try {
+      wrapAssert(done, () => {
         assert.deepEqual(events, ['connection:open', 'subscription:ready', 'subscription:close', 'connection:close'])
         assert.deepEqual(window.connection.subscriptions, {})
-        done()
-      } catch (error) {
-        done(error)
-      }
+      })
     })
 
     const subscription = window.connection.subscribe('chat')
@@ -310,48 +223,30 @@ group('Connection', (group) => {
     window.connection.connect()
   })
 
-  test('calling subscribe and close together should close the subscription eventually', (assert, done) => {
-    const events = []
+  test('calling subscribe and close together should close the subscription eventually', async (assert) => {
     window.connection = adonisWs('ws://localhost:8080').connect()
 
-    window.connection.on('open', () => {
-      const subscription = window.connection.subscribe('chat')
-      subscription.close()
+    await waitFor('open', window.connection)
+    const subscription = window.connection.subscribe('chat')
+    subscription.close()
 
-      subscription.on('ready', () => {
-        events.push('ready')
-      })
+    await waitFor('ready', subscription)
+    await waitFor('close', subscription)
 
-      subscription.on('close', () => {
-        events.push('close')
-        try {
-          assert.deepEqual(events, ['ready', 'close'])
-          assert.deepEqual(window.connection.subscriptions, {})
-          done()
-        } catch (error) {
-          done(error)
-        }
-      })
-    })
+    assert.deepEqual(window.connection.subscriptions, {})
   })
 
-  test('do not emit until subscription is ready', (assert, done) => {
+  test('do not emit until subscription is ready', async (assert) => {
     window.connection = adonisWs('ws://localhost:8080').connect()
 
-    window.connection.on('open', () => {
-      const subscription = window.connection.subscribe('badjoin')
-      subscription.emit('hi', 'hello')
+    await waitFor('open', window.connection)
 
-      subscription.on('close', () => {
-        try {
-          assert.deepEqual(subscription._emitBuffer, [{ event: 'hi', data: 'hello' }])
-          assert.deepEqual(window.connection.subscriptions, {})
-          done()
-        } catch (error) {
-          done(error)
-        }
-      })
-    })
+    const subscription = window.connection.subscribe('badjoin')
+    subscription.emit('hi', 'hello')
+
+    await waitFor('close', subscription)
+    assert.deepEqual(subscription._emitBuffer, [{ event: 'hi', data: 'hello' }])
+    assert.deepEqual(window.connection.subscriptions, {})
   })
 
   test('pass jwt token as query param', (assert, done) => {
@@ -361,24 +256,15 @@ group('Connection', (group) => {
       }
     }).withJwtToken('foo').connect()
 
-    class FakeSocket {
-      constructor () {
-        this.topic = 'chat'
-      }
-
-      joinAck () {}
-
+    class FakeSocket extends BaseSocket {
       serverEvent (packet) {
-        try {
+        wrapAssert(done, () => {
           assert.deepEqual(packet, { topic: 'chat', event: 'auth', data: 'foo' })
-          done()
-        } catch (error) {
-          done(error)
-        }
+        })
       }
     }
 
-    window.connection.subscriptions.chat = new FakeSocket()
+    window.connection.subscriptions.chat = new FakeSocket('chat')
   })
 
   test('pass api token as query param', (assert, done) => {
@@ -386,26 +272,17 @@ group('Connection', (group) => {
       query: {
         init: 'auth'
       }
-    }).withApiToken('foo').connect()
+    }).withApiToken('bar').connect()
 
-    class FakeSocket {
-      constructor () {
-        this.topic = 'chat'
-      }
-
-      joinAck () {}
-
+    class FakeSocket extends BaseSocket {
       serverEvent (packet) {
-        try {
-          assert.deepEqual(packet, { topic: 'chat', event: 'auth', data: 'foo' })
-          done()
-        } catch (error) {
-          done(error)
-        }
+        wrapAssert(done, () => {
+          assert.deepEqual(packet, { topic: 'chat', event: 'auth', data: 'bar' })
+        })
       }
     }
 
-    window.connection.subscriptions.chat = new FakeSocket()
+    window.connection.subscriptions.chat = new FakeSocket('chat')
   })
 
   test('pass basic auth credentials query param', (assert, done) => {
@@ -415,23 +292,14 @@ group('Connection', (group) => {
       }
     }).withBasicAuth('virk', 'secret').connect()
 
-    class FakeSocket {
-      constructor () {
-        this.topic = 'chat'
-      }
-
-      joinAck () {}
-
+    class FakeSocket extends BaseSocket {
       serverEvent (packet) {
-        try {
+        wrapAssert(done, () => {
           assert.deepEqual(packet, { topic: 'chat', event: 'auth', data: 'dmlyazpzZWNyZXQ=' })
-          done()
-        } catch (error) {
-          done(error)
-        }
+        })
       }
     }
 
-    window.connection.subscriptions.chat = new FakeSocket()
+    window.connection.subscriptions.chat = new FakeSocket('chat')
   })
 })

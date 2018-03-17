@@ -10,23 +10,15 @@
 */
 
 import JsonEncoder from '../src/JsonEncoder/index.js'
+import pify from 'pify'
 
 group('JsonEncoder', (group) => {
-  test('encode value', (assert, done) => {
-    assert.plan(1)
-
-    JsonEncoder.encode({ name: 'virk' }, (error, payload) => {
-      if (error) {
-        done(error)
-        return
-      }
-
-      assert.equal(payload, JSON.stringify({ name: 'virk' }))
-      done()
-    })
+  test('encode value', async (assert) => {
+    const payload = await pify(JsonEncoder.encode)({ name: 'virk' })
+    assert.equal(payload, JSON.stringify({ name: 'virk' }))
   })
 
-  test('pass encoding error to callback', (assert, done) => {
+  test('pass encoding error to callback', async (assert) => {
     assert.plan(1)
 
     const obj = {}
@@ -37,22 +29,15 @@ group('JsonEncoder', (group) => {
       }
     })
 
-    JsonEncoder.encode(obj, (error, payload) => {
-      assert.equal(error.message, 'bad')
-      done()
-    })
+    try {
+      await pify(JsonEncoder.encode)(obj)
+    } catch ({ message }) {
+      assert.equal(message, 'bad')
+    }
   })
 
-  test('decode json string', (assert, done) => {
-    assert.plan(1)
-    JsonEncoder.decode(JSON.stringify({ name: 'virk' }), (error, payload) => {
-      if (error) {
-        done(error)
-        return
-      }
-
-      assert.deepEqual(payload, { name: 'virk' })
-      done()
-    })
+  test('decode json string', async (assert) => {
+    const payload = await pify(JsonEncoder.decode)(JSON.stringify({ name: 'virk' }))
+    assert.deepEqual(payload, { name: 'virk' })
   })
 })

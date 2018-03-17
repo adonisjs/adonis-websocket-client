@@ -14,6 +14,17 @@ const wss = new WebSocket.Server({ port: 8080 })
 const Packets = require('@adonisjs/websocket-packet')
 const url = require('url')
 
+/**
+ * Sends event packets based upon the query string on the
+ * connection URL
+ *
+ * @method sendInitPackets
+ *
+ * @param  {String}        requestUrl
+ * @param  {Object}        ws
+ *
+ * @return {void}
+ */
 function sendInitPackets (requestUrl, ws) {
   const qs = new url.URLSearchParams(requestUrl.replace('/adonis-ws', ''))
   setTimeout(() => {
@@ -31,6 +42,16 @@ function sendInitPackets (requestUrl, ws) {
   })
 }
 
+/**
+ * Handles the join requests
+ *
+ * @method handleJoin
+ *
+ * @param  {Object}   packet
+ * @param  {Object}   ws
+ *
+ * @return {void}
+ */
 function handleJoin (packet, ws) {
   if (packet.d.topic === 'chat' || packet.d.topic === 'badleave') {
     ws.send(JSON.stringify(Packets.joinAckPacket(packet.d.topic)))
@@ -48,6 +69,16 @@ function handleJoin (packet, ws) {
   }
 }
 
+/**
+ * Handles the leave requests
+ *
+ * @method handleLeave
+ *
+ * @param  {Object}    packet
+ * @param  {Object}    ws
+ *
+ * @return {void}
+ */
 function handleLeave (packet, ws) {
   if (packet.d.topic === 'chat') {
     ws.send(JSON.stringify(Packets.leaveAckPacket('chat')))
@@ -57,8 +88,6 @@ function handleLeave (packet, ws) {
     ws.send(JSON.stringify(Packets.leaveErrorPacket('badleave', 'Cannot unsubscribe')))
   }
 }
-
-process.on('SIGTERM', () => wss.close())
 
 wss.on('connection', function connection (ws, req) {
   ws.send(JSON.stringify({ t: Packets.codes.OPEN, d: { clientInterval: 1000 } }))
@@ -84,3 +113,5 @@ wss.on('connection', function connection (ws, req) {
 
   sendInitPackets(req.url, ws)
 })
+
+process.on('SIGTERM', () => wss.close())
