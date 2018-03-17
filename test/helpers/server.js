@@ -21,6 +21,10 @@ function sendInitPackets (requestUrl, ws) {
       ws.send(JSON.stringify(Packets.eventPacket('chat', 'greeting', qs.get('message'))))
     }
 
+    if (qs.get('init') === 'auth') {
+      ws.send(JSON.stringify(Packets.eventPacket('chat', 'auth', qs.get('token') || qs.get('basic'))))
+    }
+
     if (qs.get('init') === 'terminate') {
       ws.close()
     }

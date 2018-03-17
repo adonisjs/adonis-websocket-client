@@ -12,6 +12,7 @@
 import Emitter from 'emittery'
 import { stringify } from 'query-string'
 import wsp from '@adonisjs/websocket-packet'
+import extend from 'extend'
 
 /* DEV */
 import debug from '../Debug'
@@ -32,7 +33,6 @@ export default class Connection extends Emitter {
     this.options = Object.assign({
       path: 'adonis-ws',
       reconnection: true,
-      autoconnect: true,
       reconnectionAttempts: 10,
       reconnectionDelay: 1000,
       query: null,
@@ -56,11 +56,11 @@ export default class Connection extends Emitter {
     this._reconnectionAttempts = 0
 
     /**
-     * Complete URL for Websocket connection
+     * Base URL for the websocket connection
      *
      * @type {String}
      */
-    this.url = this.options.query ? `${url}/${this.options.path}?${stringify(this.options.query)}` : `${url}/${this.options.path}`
+    this.url = `${url.replace(/\/$/, '')}/${this.options.path}`
 
     /**
      * Subscriptions for a single connection
@@ -93,18 +93,19 @@ export default class Connection extends Emitter {
     this._pingTimer = null
 
     /**
+     * Extended query is merged with the query params
+     * user pass
+     *
+     * @type {Object}
+     */
+    this._extendedQuery = {}
+
+    /**
      * Handler called when `close` is emitted from the
      * subscription
      */
     this.removeSubscription = ({ topic }) => {
       delete this.subscriptions[topic]
-    }
-
-    /**
-     * Kick off
-     */
-    if (this.options.autoconnect) {
-      this.connect()
     }
   }
 
@@ -493,13 +494,18 @@ export default class Connection extends Emitter {
    * @return {void}
    */
   connect () {
-    debug('creating socket connection on %s url', this.url)
+    const query = stringify(extend({}, this.options.query, this._extendedQuery))
+    const url = query ? `${this.url}?${query}` : this.url
 
-    this.ws = new window.WebSocket(this.url)
+    debug('creating socket connection on %s url', url)
+
+    this.ws = new window.WebSocket(url)
     this.ws.onclose = (event) => this._onClose(event)
     this.ws.onerror = (event) => this._onError(event)
     this.ws.onopen = (event) => this._onOpen(event)
     this.ws.onmessage = (event) => this._onMessage(event)
+
+    return this
   }
 
   /**
@@ -639,6 +645,49 @@ export default class Connection extends Emitter {
     }
 
     this.sendPacket(wsp.eventPacket(topic, event, data))
+  }
+
+  /**
+   * Use JWT token to authenticate the user
+   *
+   * @method withJwtToken
+   *
+   * @param {String} token
+   *
+   * @chainable
+   */
+  withJwtToken (token) {
+    this._extendedQuery.token = token
+    return this
+  }
+
+  /**
+   * Use basic auth credentials to login the user
+   *
+   * @method withBasicAuth
+   *
+   * @param  {String}  username
+   * @param  {String}  password
+   *
+   * @chainable
+   */
+  withBasicAuth (username, password) {
+    this._extendedQuery.basic = window.btoa(`${username}:${password}`)
+    return this
+  }
+
+  /**
+   * Use personal API token to authenticate the user
+   *
+   * @method withApiToken
+   *
+   * @param {String} token
+   *
+   * @return {String}
+   */
+  withApiToken (token) {
+    this._extendedQuery.token = token
+    return this
   }
 
   /**
