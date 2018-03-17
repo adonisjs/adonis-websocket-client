@@ -12,12 +12,7 @@
 import Emitter from 'emittery'
 import { stringify } from 'query-string'
 import wsp from '@adonisjs/websocket-packet'
-import extend from 'extend'
-
-/* DEV */
-import debug from '../Debug'
-/* END_DEV */
-
+import debug from '../Debug/index.js'
 import Socket from '../Socket/index.js'
 import JsonEncoder from '../JsonEncoder/index.js'
 
@@ -49,7 +44,9 @@ export default class Connection extends Emitter {
       encoder: JsonEncoder
     }, options)
 
-    debug('connection options %o', this.options)
+    if (process.env.NODE_ENV !== 'production') {
+      debug('connection options %o', this.options)
+    }
 
     /**
      * The state connection is in
@@ -179,7 +176,9 @@ export default class Connection extends Emitter {
     const socket = this.getSubscription(packet.d.topic)
 
     if (!socket) {
-      debug('cannot consume packet since %s topic has no active subscription %j', packet.d.topic, packet)
+      if (process.env.NODE_ENV !== 'production') {
+        debug('cannot consume packet since %s topic has no active subscription %j', packet.d.topic, packet)
+      }
       return
     }
 
@@ -209,7 +208,9 @@ export default class Connection extends Emitter {
 
     this.options.encoder.encode(this._packetsQueue.shift(), (error, payload) => {
       if (error) {
-        debug('encode error %j', error)
+        if (process.env.NODE_ENV !== 'production') {
+          debug('encode error %j', error)
+        }
         return
       }
       this.write(payload)
@@ -236,7 +237,9 @@ export default class Connection extends Emitter {
    * @private
    */
   _onOpen () {
-    debug('opened')
+    if (process.env.NODE_ENV !== 'production') {
+      debug('opened')
+    }
   }
 
   /**
@@ -251,7 +254,10 @@ export default class Connection extends Emitter {
    * @private
    */
   _onError (event) {
-    debug('error %O', event)
+    if (process.env.NODE_ENV !== 'production') {
+      debug('error %O', event)
+    }
+
     this._subscriptionsIterator((subscription) => (subscription.serverError()))
     this.emit('error', event)
   }
@@ -320,7 +326,9 @@ export default class Connection extends Emitter {
   _onMessage (event) {
     this.options.encoder.decode(event.data, (decodeError, packet) => {
       if (decodeError) {
-        debug('packet dropped, decode error %o', decodeError)
+        if (process.env.NODE_ENV !== 'production') {
+          debug('packet dropped, decode error %o', decodeError)
+        }
         return
       }
       this._handleMessage(packet)
@@ -340,53 +348,71 @@ export default class Connection extends Emitter {
    */
   _handleMessage (packet) {
     if (wsp.isOpenPacket(packet)) {
-      debug('open packet')
+      if (process.env.NODE_ENV !== 'production') {
+        debug('open packet')
+      }
       this._handleOpen(packet)
       return
     }
 
     if (wsp.isJoinAckPacket(packet)) {
-      debug('join ack packet')
+      if (process.env.NODE_ENV !== 'production') {
+        debug('join ack packet')
+      }
       this._handleJoinAck(packet)
       return
     }
 
     if (wsp.isJoinErrorPacket(packet)) {
-      debug('join error packet')
+      if (process.env.NODE_ENV !== 'production') {
+        debug('join error packet')
+      }
       this._handleJoinError(packet)
       return
     }
 
     if (wsp.isLeaveAckPacket(packet)) {
-      debug('leave ack packet')
+      if (process.env.NODE_ENV !== 'production') {
+        debug('leave ack packet')
+      }
       this._handleLeaveAck(packet)
       return
     }
 
     if (wsp.isLeaveErrorPacket(packet)) {
-      debug('leave error packet')
+      if (process.env.NODE_ENV !== 'production') {
+        debug('leave error packet')
+      }
       this._handleLeaveError(packet)
       return
     }
 
     if (wsp.isLeavePacket(packet)) {
-      debug('leave packet')
+      if (process.env.NODE_ENV !== 'production') {
+        debug('leave packet')
+      }
       this._handleServerLeave(packet)
       return
     }
 
     if (wsp.isEventPacket(packet)) {
-      debug('event packet')
+      if (process.env.NODE_ENV !== 'production') {
+        debug('event packet')
+      }
       this._handleEvent(packet)
       return
     }
 
     if (wsp.isPongPacket(packet)) {
-      debug('pong packet')
+      if (process.env.NODE_ENV !== 'production') {
+        debug('pong packet')
+      }
       return
     }
 
-    debug('invalid packet type %d', packet.t)
+    if (process.env.NODE_ENV !== 'production') {
+      debug('invalid packet type %d', packet.t)
+    }
   }
 
   /**
@@ -416,7 +442,10 @@ export default class Connection extends Emitter {
     /**
      * Sending packets to make pending subscriptions
      */
-    debug('processing pre connection subscriptions')
+    if (process.env.NODE_ENV !== 'production') {
+      debug('processing pre connection subscriptions')
+    }
+
     this._subscriptionsIterator((subscription) => {
       this.sendPacket(wsp.joinPacket(subscription.topic))
     })
@@ -520,10 +549,12 @@ export default class Connection extends Emitter {
    * @return {void}
    */
   connect () {
-    const query = stringify(extend({}, this.options.query, this._extendedQuery))
+    const query = stringify(Object.assign({}, this.options.query, this._extendedQuery))
     const url = query ? `${this._url}?${query}` : this._url
 
-    debug('creating socket connection on %s url', url)
+    if (process.env.NODE_ENV !== 'production') {
+      debug('creating socket connection on %s url', url)
+    }
 
     this.ws = new window.WebSocket(url)
     this.ws.onclose = (event) => this._onClose(event)
@@ -545,7 +576,9 @@ export default class Connection extends Emitter {
    */
   write (payload) {
     if (this.ws.readyState !== window.WebSocket.OPEN) {
-      debug('connection is not in open state, current state %s', this.ws.readyState)
+      if (process.env.NODE_ENV !== 'production') {
+        debug('connection is not in open state, current state %s', this.ws.readyState)
+      }
       return
     }
 

@@ -1,54 +1,94 @@
-import pkg from './package.json'
-import uglify from 'rollup-plugin-uglify'
-import stripCode from 'rollup-plugin-strip-code'
-import strip from 'rollup-plugin-strip'
+const pkg = require('./package')
+const basePlugins = require('./rollup.plugins.js')
 
-const plugins = require('./rollup.plugins.js')
-
-const pluginUglify = uglify()
-
-const pluginStripCode = stripCode({
-  start_comment: 'DEV',
-  end_comment: 'END_DEV'
+const pluginBabel = require('rollup-plugin-babel')({
+  ignore: /node_modules\/(!emittery).*/,
+  plugins: ['external-helpers', 'transform-object-assign'],
+  presets: [
+    [
+      'env',
+      {
+        modules: false,
+        targets: {
+          browsers: ['last 4 versions', 'safari >= 7', 'ie 11']
+        }
+      }
+    ]
+  ]
 })
 
-const pluginStrip = strip({
-  functions: ['debug']
-})
+/**
+ * UMD build
+ *
+ * @method umdBuild
+ *
+ * @return {Object}
+ */
+function umdBuild () {
+  const pluginReplace = require('rollup-plugin-replace')({
+    'process.env.NODE_ENV': JSON.stringify('development')
+  })
 
-export default [
-  {
+  return {
     input: 'index.js',
     output: {
       file: pkg.browser,
       name: 'adonis.Ws',
       format: 'umd'
     },
-    plugins
-  },
-  {
+    plugins: [pluginReplace].concat(basePlugins).concat([pluginBabel])
+  }
+}
+
+/**
+ * Umd build for production
+ *
+ * @method umdProductionBuild
+ *
+ * @return {Object}
+ */
+function umdProductionBuild () {
+  const pluginReplace = require('rollup-plugin-replace')({
+    'process.env.NODE_ENV': JSON.stringify('production')
+  })
+
+  const pluginUglify = require('rollup-plugin-uglify')()
+
+  return {
     input: 'index.js',
     output: {
-      file: `${pkg.browser.replace('.js', '.min.js')}`,
+      file: `${pkg.browser.replace(/\.js$/, '.min.js')}`,
       name: 'adonis.Ws',
       format: 'umd'
     },
-    plugins: plugins.concat([pluginStrip, pluginStripCode, pluginUglify])
-  },
-  {
+    plugins: [pluginReplace].concat(basePlugins).concat([pluginBabel, pluginUglify])
+  }
+}
+
+/**
+ * Es build
+ *
+ * @method esBuild
+ *
+ * @return {Object}
+ */
+function esBuild () {
+  return {
     input: 'index.js',
     output: {
       file: pkg.module,
       format: 'es'
     },
-    plugins
-  },
-  {
-    input: 'index.js',
-    output: {
-      file: `${pkg.module.replace('.js', '.prod.js')}`,
-      format: 'es'
-    },
-    plugins: plugins.concat([pluginStrip, pluginStripCode])
+    plugins: basePlugins.concat([pluginBabel])
   }
-]
+}
+
+const build = process.argv.slice(3)[0]
+
+if (build === '--umd') {
+  module.exports = umdBuild()
+} else if (build === '--umd-production') {
+  module.exports = umdProductionBuild()
+} else if (build === '--esm') {
+  module.exports = esBuild()
+}

@@ -1,24 +1,24 @@
+'use strict'
+
+/*
+ * adonis-websocket-client
+ *
+ * (c) Harminder Virk <virk@adonisjs.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+*/
+
+/**
+ * Base plugins
+ *
+ * @type {Array}
+ */
 module.exports = [
   require('rollup-plugin-node-resolve')({
     main: true,
     jsnext: true,
     browser: true
   }),
-  require('rollup-plugin-commonjs')(),
-  require('rollup-plugin-babel')({
-    exclude: 'node_modules/**',
-    plugins: ['external-helpers'],
-    presets: [
-      [
-        'env',
-        {
-          modules: false,
-          exclude: ['transform-es2015-classes'],
-          targets: {
-            browsers: ['last 4 versions', 'safari >= 7', 'ie 11']
-          }
-        }
-      ]
-    ]
-  })
+  require('rollup-plugin-commonjs')()
 ]

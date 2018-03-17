@@ -34,14 +34,7 @@ module.exports = function (config) {
       'test/unit/*.spec.js': ['rollup']
     },
 
-    rollupPreprocessor: {
-      plugins: require('./rollup.plugins.js'),
-      output: {
-        format: 'iife',
-        name: 'WsTest',
-        sourcemap: 'inline'
-      }
-    },
+    rollupPreprocessor: require('./test/unit/rollup.config.js'),
 
     // test results reporter to use
     // possible values: 'dots', 'progress'

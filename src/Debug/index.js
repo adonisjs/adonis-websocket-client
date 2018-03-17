@@ -9,6 +9,10 @@
  * file that was distributed with this source code.
 */
 
-import Debug from 'debug'
-Debug.enable('adonis:*')
-export default Debug('adonis:websocket')
+if (process.env.NODE_ENV !== 'production') {
+  const Debug = require('debug')
+  Debug.enable('adonis:*')
+  module.exports = Debug('adonis:websocket')
+} else {
+  module.exports = function () {}
+}
