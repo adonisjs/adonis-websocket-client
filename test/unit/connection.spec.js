@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
 */
 
-import adonisWs from '../index.js'
+import adonisWs from '../../index.js'
 import { BaseSocket, wrapAssert, waitFor, waitForNextTick } from './helpers/index'
 
 group('Connection', (group) => {

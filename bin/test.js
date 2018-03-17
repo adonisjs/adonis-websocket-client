@@ -1,6 +1,6 @@
 const { spawn, fork } = require('child_process')
 
-const server = fork('test/helpers/server.js')
+const server = fork('test/unit/helpers/server.js')
 
 const test = spawn('npm', ['run', 'test:karma'])
 

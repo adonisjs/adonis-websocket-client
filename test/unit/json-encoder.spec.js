@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
 */
 
-import JsonEncoder from '../src/JsonEncoder/index.js'
+import JsonEncoder from '../../src/JsonEncoder/index.js'
 import pify from 'pify'
 
 group('JsonEncoder', (group) => {
