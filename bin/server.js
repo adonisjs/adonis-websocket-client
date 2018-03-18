@@ -10,7 +10,7 @@
 */
 
 const WebSocket = require('ws')
-const wss = new WebSocket.Server({ port: 8080 })
+const http = require('http')
 const Packets = require('@adonisjs/websocket-packet')
 const url = require('url')
 
@@ -26,6 +26,8 @@ const url = require('url')
  * @return {void}
  */
 function sendInitPackets (requestUrl, ws) {
+  ws.send(JSON.stringify({ t: Packets.codes.OPEN, d: { clientInterval: 1000 } }))
+
   const qs = new url.URLSearchParams(requestUrl.replace('/adonis-ws', ''))
   setTimeout(() => {
     if (qs.get('init') === 'event') {
@@ -89,11 +91,31 @@ function handleLeave (packet, ws) {
   }
 }
 
-wss.on('connection', function connection (ws, req) {
-  ws.send(JSON.stringify({ t: Packets.codes.OPEN, d: { clientInterval: 1000 } }))
-  ws.on('error', function (error) {
-    console.log(error)
-  })
+/**
+ * Resends the same event back to the server
+ *
+ * @method replayEvent
+ *
+ * @param  {Object}    packet
+ */
+function replayEvent (packet, ws) {
+  const { topic, event, data } = packet.d
+  ws.send(JSON.stringify(Packets.eventPacket(topic, event, data)))
+}
+
+/**
+ * On new connection
+ *
+ * @method onConnection
+ *
+ * @param  {Object}     ws
+ * @param  {Object}     req
+ *
+ * @return {void}
+ */
+function onConnection (ws, req) {
+  ws.on('error', console.log)
+  ws.on('close', () => console.log('closing'))
 
   ws.on('message', function (message) {
     const packet = JSON.parse(message)
@@ -104,14 +126,32 @@ wss.on('connection', function connection (ws, req) {
 
     if (Packets.isLeavePacket(packet)) {
       handleLeave(packet, ws)
+      return
+    }
+
+    if (Packets.isEventPacket(packet)) {
+      replayEvent(packet, ws)
     }
   })
 
-  ws.on('close', function () {
-    console.log('closing')
-  })
-
   sendInitPackets(req.url, ws)
-})
+}
 
-process.on('SIGTERM', () => wss.close())
+module.exports = {
+  server: null,
+
+  start (httpFn, port = 8080) {
+    httpFn = httpFn || function () {}
+    this.server = http.createServer(httpFn)
+
+    const wss = new WebSocket.Server({ server: this.server })
+    wss.on('connection', onConnection)
+
+    this.server.listen(port)
+    return this.server
+  },
+
+  stop (callback) {
+    this.server.close(callback)
+  }
+}

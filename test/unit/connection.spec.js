@@ -16,7 +16,7 @@ group('Connection', (group) => {
   group.afterEach(() => {
     return new Promise((resolve) => {
       window.connection.on('close', resolve)
-      window.connection.terminate()
+      window.connection.close()
     })
   })
 

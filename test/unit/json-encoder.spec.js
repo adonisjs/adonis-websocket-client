@@ -10,11 +10,11 @@
 */
 
 import JsonEncoder from '../../src/JsonEncoder/index.js'
-import pify from 'pify'
+import util from 'util'
 
 group('JsonEncoder', (group) => {
   test('encode value', async (assert) => {
-    const payload = await pify(JsonEncoder.encode)({ name: 'virk' })
+    const payload = await util.promisify(JsonEncoder.encode)({ name: 'virk' })
     assert.equal(payload, JSON.stringify({ name: 'virk' }))
   })
 
@@ -30,14 +30,14 @@ group('JsonEncoder', (group) => {
     })
 
     try {
-      await pify(JsonEncoder.encode)(obj)
+      await util.promisify(JsonEncoder.encode)(obj)
     } catch ({ message }) {
       assert.equal(message, 'bad')
     }
   })
 
   test('decode json string', async (assert) => {
-    const payload = await pify(JsonEncoder.decode)(JSON.stringify({ name: 'virk' }))
+    const payload = await util.promisify(JsonEncoder.decode)(JSON.stringify({ name: 'virk' }))
     assert.deepEqual(payload, { name: 'virk' })
   })
 })

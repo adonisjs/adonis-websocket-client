@@ -17,6 +17,12 @@
 <br />
 
 <div align="center">
+  <a href="https://saucelabs.com/beta/builds/f55d3f5a269840da8603c39b9412e3fe"><img src="https://saucelabs.com/browser-matrix/amanvirk.svg" alt="Browser Matrix"></a>
+</div>
+
+<br />
+
+<div align="center">
   <h3>
     <a href="https://adonisjs.com/docs/websocket">
       Official Docs

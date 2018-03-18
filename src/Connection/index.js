@@ -295,6 +295,10 @@ export default class Connection extends Emitter {
    * @private
    */
   _onClose (event) {
+    if (process.env.NODE_ENV !== 'production') {
+      debug('closing from %s state', this._connectionState)
+    }
+
     this._cleanup()
 
     /**
@@ -443,11 +447,11 @@ export default class Connection extends Emitter {
      * Sending packets to make pending subscriptions
      */
     if (process.env.NODE_ENV !== 'production') {
-      debug('processing pre connection subscriptions')
+      debug('processing pre connection subscriptions %o', Object.keys(this.subscriptions))
     }
 
     this._subscriptionsIterator((subscription) => {
-      this.sendPacket(wsp.joinPacket(subscription.topic))
+      this._sendSubscriptionPacket(subscription.topic)
     })
   }
 
@@ -539,6 +543,24 @@ export default class Connection extends Emitter {
    */
   _handleEvent (packet) {
     this._ensureSubscription(packet, (socket, packet) => socket.serverEvent(packet.d))
+  }
+
+  /**
+   * Sends the subscription packet for a given topic
+   *
+   * @method sendSubscriptionPacket
+   *
+   * @param  {String}               topic
+   *
+   * @return {void}
+   *
+   * @private
+   */
+  _sendSubscriptionPacket (topic) {
+    if (process.env.NODE_ENV !== 'production') {
+      debug('initiating subscription for %s topic with server', topic)
+    }
+    this.sendPacket(wsp.joinPacket(topic))
   }
 
   /**
@@ -657,7 +679,7 @@ export default class Connection extends Emitter {
      * be considered ready, once server acknowledges it
      */
     if (this._connectionState === 'open') {
-      this.sendPacket(wsp.joinPacket(topic))
+      this._sendSubscriptionPacket(topic)
     }
 
     return socket
@@ -701,6 +723,10 @@ export default class Connection extends Emitter {
      */
     if (subscription.state !== 'open') {
       throw new Error(`Cannot emit since subscription socket is in ${this.state} state`)
+    }
+
+    if (process.env.NODE_ENV !== 'production') {
+      debug('sending event on %s topic', topic)
     }
 
     this.sendPacket(wsp.eventPacket(topic, event, data))
