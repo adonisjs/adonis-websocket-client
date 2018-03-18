@@ -21,7 +21,7 @@ module.exports = function (config) {
     // list of files / patterns to load in the browser
     files: [
       'node_modules/babel-polyfill/dist/polyfill.js',
-      { pattern: 'test/*.spec.js', watched: false }
+      { pattern: 'test/unit/*.spec.js', watched: false }
     ],
 
     // list of files / patterns to exclude
@@ -31,17 +31,10 @@ module.exports = function (config) {
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
-      'test/*.spec.js': ['rollup']
+      'test/unit/*.spec.js': ['rollup']
     },
 
-    rollupPreprocessor: {
-      plugins: require('./rollup.plugins.js'),
-      output: {
-        format: 'iife',
-        name: 'WsTest',
-        sourcemap: 'inline'
-      }
-    },
+    rollupPreprocessor: require('./test/unit/rollup.config.js'),
 
     // test results reporter to use
     // possible values: 'dots', 'progress'

@@ -11,7 +11,15 @@
 
 import Emitter from 'emittery'
 import wsp from '@adonisjs/websocket-packet'
+import debug from '../Debug/index.js'
 
+/**
+ * Socket class holds details for a single subscription. The instance
+ * of this class can be used to exchange messages with the server
+ * on a given topic.
+ *
+ * @class Socket
+ */
 export default class Socket {
   constructor (topic, connection) {
     this.topic = topic
@@ -65,8 +73,12 @@ export default class Socket {
     this.state = 'open'
     this.emitter.emit('ready', this)
 
+    if (process.env.NODE_ENV !== 'production') {
+      debug('clearing emit buffer for %s topic after subscription ack', this.topic)
+    }
+
     /**
-     * Process queued events, before the subscription was ready
+     * Process queued events
      */
     this._emitBuffer.forEach((buf) => (this.emit(buf.event, buf.data)))
     this._emitBuffer = []
@@ -221,6 +233,9 @@ export default class Socket {
    */
   close () {
     this.state = 'closing'
+    if (process.env.NODE_ENV !== 'production') {
+      debug('closing subscription for %s topic with server', this.topic)
+    }
     this.connection.sendPacket(wsp.leavePacket(this.topic))
   }
 

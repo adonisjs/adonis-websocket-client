@@ -1,17 +1,21 @@
 {
   "name": "@adonisjs/websocket-client",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Websocket client for AdonisJs",
   "main": "dist/Ws.es.js",
   "module": "dist/Ws.es.js",
   "browser": "dist/Ws.browser.js",
   "scripts": {
     "lint": "standard",
-    "build": "rollup -c",
+    "build:esm": "rollup -c --esm",
+    "build:umd": "rollup -c --umd && rollup -c --umd-production",
+    "build": "npm run build:umd && npm run build:esm",
     "prepublishOnly": "npm run build",
     "pretest": "npm run lint",
-    "test:karma": "karma start",
-    "test": "node ./bin/test.js"
+    "test:karma:local": "karma start",
+    "test:karma": "node ./bin/karma.js",
+    "test:qunit": "npm run build:esm && node ./bin/qunit.js",
+    "test": "npm run test:karma && npm run test:qunit"
   },
   "keywords": [
     "websocket",
@@ -26,21 +30,26 @@
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.0",
     "babel-plugin-external-helpers": "^6.22.0",
+    "babel-plugin-transform-object-assign": "^6.22.0",
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",
+    "chalk": "^2.3.2",
     "cz-conventional-changelog": "^2.1.0",
+    "got": "^8.3.0",
     "karma": "^2.0.0",
     "karma-chrome-launcher": "^2.2.0",
     "karma-japa": "^1.0.2",
     "karma-rollup-preprocessor": "^5.1.1",
     "karma-sourcemap-loader": "^0.3.7",
+    "ngrok": "^3.0.0",
+    "opn": "^5.3.0",
+    "pify": "^3.0.0",
     "puppeteer": "^1.2.0",
     "rollup": "^0.57.0",
     "rollup-plugin-babel": "^3.0.3",
     "rollup-plugin-commonjs": "^9.1.0",
     "rollup-plugin-node-resolve": "^3.2.0",
-    "rollup-plugin-strip": "^1.1.1",
-    "rollup-plugin-strip-code": "^0.2.5",
+    "rollup-plugin-replace": "^2.0.0",
     "rollup-plugin-uglify": "^3.0.0",
     "standard": "^11.0.1",
     "ws": "^5.0.0"
@@ -53,7 +62,8 @@
   "standard": {
     "globals": [
       "test",
-      "group"
+      "group",
+      "QUnit"
     ]
   },
   "config": {
