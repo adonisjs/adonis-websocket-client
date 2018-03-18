@@ -79,7 +79,7 @@ sauceLabs.createTestsJob = function (browsers, url) {
     url: url,
     framework: 'qunit'
   })
-  .then((body) => body['js tests'])
+    .then((body) => body['js tests'])
 }
 
 /**

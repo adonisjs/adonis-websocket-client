@@ -2,7 +2,7 @@ const { spawn } = require('child_process')
 const chalk = require('chalk')
 const ws = require('./server')
 
-ws.start(8080)
+ws.start(null, 8080)
 console.log(chalk`{green > started websocket server on port 8080}`)
 
 const test = spawn('npm', ['run', 'test:karma:local'])
