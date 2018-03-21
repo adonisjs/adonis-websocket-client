@@ -1,3 +1,13 @@
+<a name="1.0.7"></a>
+## [1.0.7](https://github.com/adonisjs/adonis-websocket-client/compare/v1.0.6...v1.0.7) (2018-03-21)
+
+
+### Features
+
+* **Connection:** auto detect url when not defined ([4f958e4](https://github.com/adonisjs/adonis-websocket-client/commit/4f958e4))
+
+
+
 <a name="1.0.6"></a>
 ## [1.0.6](https://github.com/adonisjs/adonis-websocket-client/compare/v1.0.5...v1.0.6) (2018-03-18)
 
