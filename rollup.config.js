@@ -3,6 +3,22 @@ const basePlugins = require('./rollup.plugins.js')
 
 const pluginBabel = require('rollup-plugin-babel')({
   ignore: /node_modules\/(!emittery).*/,
+  plugins: ['external-helpers', 'transform-object-assign', 'transform-regenerator'],
+  presets: [
+    [
+      'env',
+      {
+        modules: false,
+        targets: {
+          browsers: ['last 4 versions', 'safari >= 7', 'ie 11']
+        }
+      }
+    ]
+  ]
+})
+
+const pluginBabelEs = require('rollup-plugin-babel')({
+  ignore: /node_modules\/(!emittery).*/,
   plugins: ['external-helpers', 'transform-object-assign'],
   presets: [
     [
@@ -79,7 +95,7 @@ function esBuild () {
       file: pkg.module,
       format: 'es'
     },
-    plugins: basePlugins.concat([pluginBabel])
+    plugins: basePlugins.concat([pluginBabelEs])
   }
 }
 
