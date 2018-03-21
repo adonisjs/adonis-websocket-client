@@ -38,7 +38,7 @@ export default class Connection extends Emitter {
   constructor (url, options) {
     super()
 
-    url = url || `${wsProtocol}://${window.location.hostname}`
+    url = url || `${wsProtocol}://${window.location.host}`
 
     /**
      * Connection options
