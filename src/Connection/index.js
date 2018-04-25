@@ -17,6 +17,14 @@ import Socket from '../Socket/index.js'
 import JsonEncoder from '../JsonEncoder/index.js'
 
 /**
+ * Returns the ws protocol based upon HTTP or HTTPS
+ *
+ * @returns {String}
+ *
+ */
+const wsProtocol = window.location && window.location.protocol === 'https:' ? 'wss' : 'ws'
+
+/**
  * Connection class is used to make a TCP/Socket connection
  * with the server. It relies on Native Websocket browser
  * support.
@@ -30,13 +38,7 @@ export default class Connection extends Emitter {
   constructor (url, options) {
     super()
 
-    if (!url) {
-      /**
-      * The ws protocol based upon HTTP or HTTPS
-      */
-      const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
-      url = `${wsProtocol}://${window.location.host}`
-    }
+    url = url || `${wsProtocol}://${window.location.host}`
 
     /**
      * Connection options
@@ -133,8 +135,8 @@ export default class Connection extends Emitter {
    */
   get shouldReconnect () {
     return this._connectionState !== 'terminated' &&
-    this.options.reconnection &&
-    this.options.reconnectionAttempts > this._reconnectionAttempts
+      this.options.reconnection &&
+      this.options.reconnectionAttempts > this._reconnectionAttempts
   }
 
   /**
