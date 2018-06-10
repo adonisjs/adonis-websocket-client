@@ -57,7 +57,7 @@
   },
   "dependencies": {
     "@adonisjs/websocket-packet": "^1.0.6",
-    "emittery": "^0.3.0",
+    "emittery": "^0.4.0",
     "query-string": "^6.0.0"
   },
   "standard": {
