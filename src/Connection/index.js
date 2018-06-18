@@ -22,7 +22,7 @@ import JsonEncoder from '../JsonEncoder/index.js'
  * @returns {String}
  *
  */
-const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
+const wsProtocol = window.location && window.location.protocol === 'https:' ? 'wss' : 'ws'
 
 /**
  * Connection class is used to make a TCP/Socket connection
@@ -135,8 +135,8 @@ export default class Connection extends Emitter {
    */
   get shouldReconnect () {
     return this._connectionState !== 'terminated' &&
-    this.options.reconnection &&
-    this.options.reconnectionAttempts > this._reconnectionAttempts
+      this.options.reconnection &&
+      this.options.reconnectionAttempts > this._reconnectionAttempts
   }
 
   /**
