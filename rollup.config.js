@@ -1,21 +1,25 @@
-const pkg = require('./package')
-const basePlugins = require('./rollup.plugins.js')
-
+const pkg = require('./package');
+const basePlugins = require('./rollup.plugins.js');
+const resolve = require('rollup-plugin-node-resolve');
 const pluginBabel = require('rollup-plugin-babel')({
   ignore: /node_modules\/(!emittery).*/,
-  plugins: ['external-helpers', 'transform-object-assign', 'transform-regenerator'],
+  plugins: [
+    'external-helpers',
+    'transform-object-assign',
+    'transform-regenerator',
+  ],
   presets: [
     [
       'env',
       {
         modules: false,
         targets: {
-          browsers: ['last 4 versions', 'safari >= 7', 'ie 11']
-        }
-      }
-    ]
-  ]
-})
+          browsers: ['last 4 versions', 'safari >= 7', 'ie 11'],
+        },
+      },
+    ],
+  ],
+});
 
 const pluginBabelEs = require('rollup-plugin-babel')({
   ignore: /node_modules\/(!emittery).*/,
@@ -26,12 +30,28 @@ const pluginBabelEs = require('rollup-plugin-babel')({
       {
         modules: false,
         targets: {
-          browsers: ['last 4 versions', 'safari >= 7', 'ie 11']
-        }
-      }
-    ]
-  ]
-})
+          browsers: ['last 4 versions', 'safari >= 7', 'ie 11'],
+        },
+      },
+    ],
+  ],
+});
+
+const pluginBabelCjs = require('rollup-plugin-babel')({
+  ignore: /node_modules\/(!emittery).*/,
+  plugins: ['external-helpers', 'transform-object-assign'],
+  presets: [
+    [
+      'env',
+      {
+        modules: false,
+        targets: {
+          browsers: ['last 4 versions', 'safari >= 7', 'ie 11'],
+        },
+      },
+    ],
+  ],
+});
 
 /**
  * UMD build
@@ -40,20 +60,20 @@ const pluginBabelEs = require('rollup-plugin-babel')({
  *
  * @return {Object}
  */
-function umdBuild () {
+function umdBuild() {
   const pluginReplace = require('rollup-plugin-replace')({
-    'process.env.NODE_ENV': JSON.stringify('development')
-  })
+    'process.env.NODE_ENV': JSON.stringify('development'),
+  });
 
   return {
     input: 'index.js',
     output: {
       file: pkg.browser,
       name: 'adonis.Ws',
-      format: 'umd'
+      format: 'umd',
     },
-    plugins: [pluginReplace].concat(basePlugins).concat([pluginBabel])
-  }
+    plugins: [pluginReplace].concat(basePlugins).concat([pluginBabel]),
+  };
 }
 
 /**
@@ -63,22 +83,24 @@ function umdBuild () {
  *
  * @return {Object}
  */
-function umdProductionBuild () {
+function umdProductionBuild() {
   const pluginReplace = require('rollup-plugin-replace')({
-    'process.env.NODE_ENV': JSON.stringify('production')
-  })
+    'process.env.NODE_ENV': JSON.stringify('production'),
+  });
 
-  const pluginUglify = require('rollup-plugin-uglify')()
+  const pluginUglify = require('rollup-plugin-uglify');
 
   return {
     input: 'index.js',
     output: {
       file: `${pkg.browser.replace(/\.js$/, '.min.js')}`,
       name: 'adonis.Ws',
-      format: 'umd'
+      format: 'umd',
     },
-    plugins: [pluginReplace].concat(basePlugins).concat([pluginBabel, pluginUglify])
-  }
+    plugins: [pluginReplace]
+      .concat(basePlugins)
+      .concat([pluginBabel, pluginUglify]),
+  };
 }
 
 /**
@@ -88,23 +110,42 @@ function umdProductionBuild () {
  *
  * @return {Object}
  */
-function esBuild () {
+function esBuild() {
   return {
     input: 'index.js',
     output: {
       file: pkg.module,
-      format: 'es'
+      format: 'es',
     },
-    plugins: basePlugins.concat([pluginBabelEs])
-  }
+    plugins: basePlugins.concat([pluginBabelEs]),
+  };
 }
 
-const build = process.argv.slice(3)[0]
+/**
+ * Cjs build
+ *
+ * @method cjsBuild
+ *
+ * @return {Object}
+ */
+function cjsBuild() {
+  const resolve = require('rollup-plugin-node-resolve');
+
+  return {
+    input: 'index.js',
+    output: {file: pkg.main, format: 'cjs'},
+    plugins: [resolve()].concat(basePlugins).concat([pluginBabelCjs]),
+  };
+}
+
+const build = process.argv.slice(3)[0];
 
 if (build === '--umd') {
-  module.exports = umdBuild()
+  module.exports = umdBuild();
 } else if (build === '--umd-production') {
-  module.exports = umdProductionBuild()
+  module.exports = umdProductionBuild();
 } else if (build === '--esm') {
-  module.exports = esBuild()
+  module.exports = esBuild();
+} else if (build === '--cjs') {
+  module.exports = cjsBuild();
 }
