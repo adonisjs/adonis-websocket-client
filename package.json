@@ -11,6 +11,7 @@
     "build:esm": "rollup -c --esm",
     "build:umd": "rollup -c --umd && rollup -c --umd-production",
     "build": "npm run build:cjs && npm run build:umd && npm run build:esm",
+    "postinstall": "npm run build",
     "prepublishOnly": "npm run build",
     "pretest": "npm run lint",
     "test:karma:local": "karma start",
