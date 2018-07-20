@@ -1,9 +1,12 @@
 const pkg = require('./package')
 const basePlugins = require('./rollup.plugins.js')
-
 const pluginBabel = require('rollup-plugin-babel')({
   ignore: /node_modules\/(!emittery).*/,
-  plugins: ['external-helpers', 'transform-object-assign', 'transform-regenerator'],
+  plugins: [
+    'external-helpers',
+    'transform-object-assign',
+    'transform-regenerator'
+  ],
   presets: [
     [
       'env',
@@ -18,6 +21,22 @@ const pluginBabel = require('rollup-plugin-babel')({
 })
 
 const pluginBabelEs = require('rollup-plugin-babel')({
+  ignore: /node_modules\/(!emittery).*/,
+  plugins: ['external-helpers', 'transform-object-assign'],
+  presets: [
+    [
+      'env',
+      {
+        modules: false,
+        targets: {
+          browsers: ['last 4 versions', 'safari >= 7', 'ie 11']
+        }
+      }
+    ]
+  ]
+})
+
+const pluginBabelCjs = require('rollup-plugin-babel')({
   ignore: /node_modules\/(!emittery).*/,
   plugins: ['external-helpers', 'transform-object-assign'],
   presets: [
@@ -68,7 +87,7 @@ function umdProductionBuild () {
     'process.env.NODE_ENV': JSON.stringify('production')
   })
 
-  const pluginUglify = require('rollup-plugin-uglify')()
+  const pluginUglify = require('rollup-plugin-uglify')
 
   return {
     input: 'index.js',
@@ -77,7 +96,9 @@ function umdProductionBuild () {
       name: 'adonis.Ws',
       format: 'umd'
     },
-    plugins: [pluginReplace].concat(basePlugins).concat([pluginBabel, pluginUglify])
+    plugins: [pluginReplace]
+      .concat(basePlugins)
+      .concat([pluginBabel, pluginUglify])
   }
 }
 
@@ -99,6 +120,23 @@ function esBuild () {
   }
 }
 
+/**
+ * Cjs build
+ *
+ * @method cjsBuild
+ *
+ * @return {Object}
+ */
+function cjsBuild () {
+  const resolve = require('rollup-plugin-node-resolve')
+
+  return {
+    input: 'index.js',
+    output: { file: pkg.main, format: 'cjs' },
+    plugins: [resolve()].concat(basePlugins).concat([pluginBabelCjs])
+  }
+}
+
 const build = process.argv.slice(3)[0]
 
 if (build === '--umd') {
@@ -107,4 +145,6 @@ if (build === '--umd') {
   module.exports = umdProductionBuild()
 } else if (build === '--esm') {
   module.exports = esBuild()
+} else if (build === '--cjs') {
+  module.exports = cjsBuild()
 }
