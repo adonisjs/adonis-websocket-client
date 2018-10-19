@@ -51,10 +51,11 @@ export default class Connection extends Emitter {
       reconnectionAttempts: 10,
       reconnectionDelay: 1000,
       query: null,
-      encoder: JsonEncoder
+      encoder: JsonEncoder,
+      debug: (process.env.NODE_ENV !== 'production')
     }, options)
 
-    if (process.env.NODE_ENV !== 'production') {
+    if (this.options.debug) {
       debug('connection options %o', this.options)
     }
 
@@ -186,7 +187,7 @@ export default class Connection extends Emitter {
     const socket = this.getSubscription(packet.d.topic)
 
     if (!socket) {
-      if (process.env.NODE_ENV !== 'production') {
+      if (this.options.debug) {
         debug('cannot consume packet since %s topic has no active subscription %j', packet.d.topic, packet)
       }
       return
@@ -218,7 +219,7 @@ export default class Connection extends Emitter {
 
     this.options.encoder.encode(this._packetsQueue.shift(), (error, payload) => {
       if (error) {
-        if (process.env.NODE_ENV !== 'production') {
+        if (this.options.debug) {
           debug('encode error %j', error)
         }
         return
@@ -247,7 +248,7 @@ export default class Connection extends Emitter {
    * @private
    */
   _onOpen () {
-    if (process.env.NODE_ENV !== 'production') {
+    if (this.options.debug) {
       debug('opened')
     }
   }
@@ -264,7 +265,7 @@ export default class Connection extends Emitter {
    * @private
    */
   _onError (event) {
-    if (process.env.NODE_ENV !== 'production') {
+    if (this.options.debug) {
       debug('error %O', event)
     }
 
@@ -305,7 +306,7 @@ export default class Connection extends Emitter {
    * @private
    */
   _onClose (event) {
-    if (process.env.NODE_ENV !== 'production') {
+    if (this.options.debug) {
       debug('closing from %s state', this._connectionState)
     }
 
@@ -340,7 +341,7 @@ export default class Connection extends Emitter {
   _onMessage (event) {
     this.options.encoder.decode(event.data, (decodeError, packet) => {
       if (decodeError) {
-        if (process.env.NODE_ENV !== 'production') {
+        if (this.options.debug) {
           debug('packet dropped, decode error %o', decodeError)
         }
         return
@@ -362,7 +363,7 @@ export default class Connection extends Emitter {
    */
   _handleMessage (packet) {
     if (wsp.isOpenPacket(packet)) {
-      if (process.env.NODE_ENV !== 'production') {
+      if (this.options.debug) {
         debug('open packet')
       }
       this._handleOpen(packet)
@@ -370,7 +371,7 @@ export default class Connection extends Emitter {
     }
 
     if (wsp.isJoinAckPacket(packet)) {
-      if (process.env.NODE_ENV !== 'production') {
+      if (this.options.debug) {
         debug('join ack packet')
       }
       this._handleJoinAck(packet)
@@ -378,7 +379,7 @@ export default class Connection extends Emitter {
     }
 
     if (wsp.isJoinErrorPacket(packet)) {
-      if (process.env.NODE_ENV !== 'production') {
+      if (this.options.debug) {
         debug('join error packet')
       }
       this._handleJoinError(packet)
@@ -386,7 +387,7 @@ export default class Connection extends Emitter {
     }
 
     if (wsp.isLeaveAckPacket(packet)) {
-      if (process.env.NODE_ENV !== 'production') {
+      if (this.options.debug) {
         debug('leave ack packet')
       }
       this._handleLeaveAck(packet)
@@ -394,7 +395,7 @@ export default class Connection extends Emitter {
     }
 
     if (wsp.isLeaveErrorPacket(packet)) {
-      if (process.env.NODE_ENV !== 'production') {
+      if (this.options.debug) {
         debug('leave error packet')
       }
       this._handleLeaveError(packet)
@@ -402,7 +403,7 @@ export default class Connection extends Emitter {
     }
 
     if (wsp.isLeavePacket(packet)) {
-      if (process.env.NODE_ENV !== 'production') {
+      if (this.options.debug) {
         debug('leave packet')
       }
       this._handleServerLeave(packet)
@@ -410,7 +411,7 @@ export default class Connection extends Emitter {
     }
 
     if (wsp.isEventPacket(packet)) {
-      if (process.env.NODE_ENV !== 'production') {
+      if (this.options.debug) {
         debug('event packet')
       }
       this._handleEvent(packet)
@@ -418,13 +419,13 @@ export default class Connection extends Emitter {
     }
 
     if (wsp.isPongPacket(packet)) {
-      if (process.env.NODE_ENV !== 'production') {
+      if (this.options.debug) {
         debug('pong packet')
       }
       return
     }
 
-    if (process.env.NODE_ENV !== 'production') {
+    if (this.options.debug) {
       debug('invalid packet type %d', packet.t)
     }
   }
@@ -456,7 +457,7 @@ export default class Connection extends Emitter {
     /**
      * Sending packets to make pending subscriptions
      */
-    if (process.env.NODE_ENV !== 'production') {
+    if (this.options.debug) {
       debug('processing pre connection subscriptions %o', Object.keys(this.subscriptions))
     }
 
@@ -567,7 +568,7 @@ export default class Connection extends Emitter {
    * @private
    */
   _sendSubscriptionPacket (topic) {
-    if (process.env.NODE_ENV !== 'production') {
+    if (this.options.debug) {
       debug('initiating subscription for %s topic with server', topic)
     }
     this.sendPacket(wsp.joinPacket(topic))
@@ -584,7 +585,7 @@ export default class Connection extends Emitter {
     const query = stringify(Object.assign({}, this.options.query, this._extendedQuery))
     const url = query ? `${this._url}?${query}` : this._url
 
-    if (process.env.NODE_ENV !== 'production') {
+    if (this.options.debug) {
       debug('creating socket connection on %s url', url)
     }
 
@@ -608,7 +609,7 @@ export default class Connection extends Emitter {
    */
   write (payload) {
     if (this.ws.readyState !== window.WebSocket.OPEN) {
-      if (process.env.NODE_ENV !== 'production') {
+      if (this.options.debug) {
         debug('connection is not in open state, current state %s', this.ws.readyState)
       }
       return
@@ -735,7 +736,7 @@ export default class Connection extends Emitter {
       throw new Error(`Cannot emit since subscription socket is in ${this.state} state`)
     }
 
-    if (process.env.NODE_ENV !== 'production') {
+    if (this.options.debug) {
       debug('sending event on %s topic', topic)
     }
 
