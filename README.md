@@ -35,5 +35,5 @@
 </div>
 
 <div align="center">
-  <sub>Used by adonisjs.com. Built with ❤︎ by <a href="https://github.com/thetutlage">Harminder Virk</a>
+  <sub>Used by [adonisjs](adonisjs.com). Built with ❤︎ by <a href="https://github.com/thetutlage">Harminder Virk</a>
 </div>
