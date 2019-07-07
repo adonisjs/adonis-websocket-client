@@ -27,10 +27,6 @@
     <a href="https://adonisjs.com/docs/websocket">
       Official Docs
     </a>
-    <span> | </span>
-    <a href="https://github.com/adonisjs/adonis-websocket-vue">
-      Vue Plugin
-    </a>
   </h3>
 </div>
 
