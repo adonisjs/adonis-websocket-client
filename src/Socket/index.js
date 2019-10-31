@@ -134,7 +134,7 @@ export default class Socket {
    * @method on
    */
   on (...args) {
-    this.emitter.on(...args)
+    return this.emitter.on(...args)
   }
 
   /* istanbul-ignore */
