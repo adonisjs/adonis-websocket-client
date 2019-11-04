@@ -104,7 +104,7 @@ group('Connection', (group) => {
     const subscription = window.connection.subscribe('chat')
     await waitFor('ready', subscription)
 
-    assert.deepEqual(window.connection.subscriptions, { 'chat': subscription })
+    assert.deepEqual(window.connection.subscriptions, { chat: subscription })
   })
 
   test('remove subscriptions when join is errored out from server', async (assert) => {

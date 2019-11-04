@@ -20,7 +20,7 @@ module.exports = function (config) {
 
     // list of files / patterns to load in the browser
     files: [
-      'node_modules/babel-polyfill/dist/polyfill.js',
+      'node_modules/@babel/polyfill/dist/polyfill.js',
       { pattern: 'test/unit/*.spec.js', watched: false }
     ],
 

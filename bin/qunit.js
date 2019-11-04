@@ -26,7 +26,7 @@
 const chalk = require('chalk')
 const path = require('path')
 const rollup = require('rollup')
-const opn = require('opn')
+const open = require('open')
 const ngrok = require('ngrok')
 const ws = require('./server')
 const saucelabs = require('./saucelabs')
@@ -128,7 +128,7 @@ async function start () {
     if (!process.env.SAUCE_USERNAME || !process.env.SAUCE_ACCESS_KEY) {
       console.log(chalk`{yellow pass SAUCE_USERNAME & SAUCE_ACCESS_KEY to run tests on saucelabs}`)
       console.log(chalk`{yellow Also make sure to quit this process manually}`)
-      opn(`http://localhost:${PORT}`)
+      open(`http://localhost:${PORT}`)
       return
     }
 
@@ -168,7 +168,7 @@ async function start () {
     const buildId = `build-${new Date().getTime()}`
     console.log('annotating jobs result')
 
-    for (let result of results) {
+    for (const result of results) {
       await saucelabs.annotateJob(result.job_id, buildId, result.result.failed === 0)
     }
 
