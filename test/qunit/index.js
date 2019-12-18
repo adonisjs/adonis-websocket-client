@@ -9,6 +9,6 @@
  * file that was distributed with this source code.
 */
 
-import 'babel-polyfill'
+import '@babel/polyfill'
 import './setup'
 import './specs/main.spec.js'

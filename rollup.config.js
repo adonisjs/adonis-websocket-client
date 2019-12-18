@@ -2,11 +2,11 @@ const pkg = require('./package')
 const basePlugins = require('./rollup.plugins.js')
 
 const pluginBabel = require('rollup-plugin-babel')({
-  ignore: /node_modules\/(!emittery).*/,
-  plugins: ['external-helpers', 'transform-object-assign', 'transform-regenerator'],
+  ignore: [/node_modules\/(!emittery).*/],
+  plugins: ['@babel/plugin-transform-regenerator', '@babel/transform-regenerator'],
   presets: [
     [
-      'env',
+      '@babel/preset-env',
       {
         modules: false,
         targets: {
@@ -18,11 +18,11 @@ const pluginBabel = require('rollup-plugin-babel')({
 })
 
 const pluginBabelEs = require('rollup-plugin-babel')({
-  ignore: /node_modules\/(!emittery).*/,
-  plugins: ['external-helpers', 'transform-object-assign'],
+  ignore: [/node_modules\/(!emittery).*/],
+  plugins: ['@babel/transform-object-assign'],
   presets: [
     [
-      'env',
+      '@babel/preset-env',
       {
         modules: false,
         targets: {
@@ -41,7 +41,7 @@ const pluginBabelEs = require('rollup-plugin-babel')({
  * @return {Object}
  */
 function umdBuild () {
-  const pluginReplace = require('rollup-plugin-replace')({
+  const pluginReplace = require('@rollup/plugin-replace')({
     'process.env.NODE_ENV': JSON.stringify('development')
   })
 
@@ -64,7 +64,7 @@ function umdBuild () {
  * @return {Object}
  */
 function umdProductionBuild () {
-  const pluginReplace = require('rollup-plugin-replace')({
+  const pluginReplace = require('@rollup/plugin-replace')({
     'process.env.NODE_ENV': JSON.stringify('production')
   })
 

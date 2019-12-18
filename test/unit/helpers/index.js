@@ -24,6 +24,7 @@ export class BaseSocket {
     this.topic = topic
     this.connection = connection
   }
+
   joinAck () {}
   leaveAck () {}
   leaveError () {}

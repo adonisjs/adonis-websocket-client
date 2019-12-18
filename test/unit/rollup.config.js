@@ -14,7 +14,7 @@ const basePlugins = require('../../rollup.plugins.js')
 /**
  * Do replace the `process.env.NODE_ENV` block
  */
-const pluginReplace = require('rollup-plugin-replace')({
+const pluginReplace = require('@rollup/plugin-replace')({
   'process.env.NODE_ENV': JSON.stringify('development')
 })
 
@@ -22,11 +22,11 @@ const pluginReplace = require('rollup-plugin-replace')({
  * Babel transforms, just for testing
  */
 const babelPlugin = require('rollup-plugin-babel')({
-  ignore: /node_modules\/(!emittery).*/,
-  plugins: ['external-helpers', 'transform-object-assign'],
+  ignore: [/node_modules\/(!emittery).*/],
+  plugins: ['@babel/transform-object-assign'],
   presets: [
     [
-      'env',
+      '@babel/preset-env',
       {
         modules: false
       }
