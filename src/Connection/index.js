@@ -588,7 +588,8 @@ export default class Connection extends Emitter {
       debug('creating socket connection on %s url', url)
     }
 
-    this.ws = new window.WebSocket(url)
+    // eslint-disable-next-line no-undef
+    this.ws = (typeof window !== 'undefined') ? new window.WebSocket(url) : new WebSocket(url)
     this.ws.onclose = (event) => this._onClose(event)
     this.ws.onerror = (event) => this._onError(event)
     this.ws.onopen = (event) => this._onOpen(event)
@@ -607,7 +608,8 @@ export default class Connection extends Emitter {
    * @return {void}
    */
   write (payload) {
-    if (this.ws.readyState !== window.WebSocket.OPEN) {
+    // eslint-disable-next-line no-undef
+    if (this.ws.readyState !== ((typeof window !== 'undefined') ? window.WebSocket.OPEN : WebSocket.OPEN)) {
       if (process.env.NODE_ENV !== 'production') {
         debug('connection is not in open state, current state %s', this.ws.readyState)
       }
@@ -767,7 +769,8 @@ export default class Connection extends Emitter {
    * @chainable
    */
   withBasicAuth (username, password) {
-    this._extendedQuery.basic = window.btoa(`${username}:${password}`)
+    // eslint-disable-next-line no-undef
+    this._extendedQuery.basic = (typeof window !== 'undefined') ? window.btoa(`${username}:${password}`) : btoa(`${username}:${password}`)
     return this
   }
 
