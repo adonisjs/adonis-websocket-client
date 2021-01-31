@@ -16,13 +16,15 @@ import debug from '../Debug/index.js'
 import Socket from '../Socket/index.js'
 import JsonEncoder from '../JsonEncoder/index.js'
 
+const hasWindow = typeof window !== 'undefined'
+
 /**
  * Returns the ws protocol based upon HTTP or HTTPS
  *
  * @returns {String}
  *
  */
-const wsProtocol = (typeof window !== 'undefined' && window.location.protocol === 'https:') ? 'wss' : 'ws'
+const wsProtocol = (hasWindow && window.location.protocol === 'https:') ? 'wss' : 'ws'
 
 /**
  * Connection class is used to make a TCP/Socket connection
@@ -588,7 +590,8 @@ export default class Connection extends Emitter {
       debug('creating socket connection on %s url', url)
     }
 
-    this.ws = new window.WebSocket(url)
+    // eslint-disable-next-line no-undef
+    this.ws = hasWindow ? new window.WebSocket(url) : new WebSocket(url)
     this.ws.onclose = (event) => this._onClose(event)
     this.ws.onerror = (event) => this._onError(event)
     this.ws.onopen = (event) => this._onOpen(event)
@@ -607,7 +610,8 @@ export default class Connection extends Emitter {
    * @return {void}
    */
   write (payload) {
-    if (this.ws.readyState !== window.WebSocket.OPEN) {
+    // eslint-disable-next-line no-undef
+    if (this.ws.readyState !== (hasWindow ? window.WebSocket.OPEN : WebSocket.OPEN)) {
       if (process.env.NODE_ENV !== 'production') {
         debug('connection is not in open state, current state %s', this.ws.readyState)
       }
@@ -767,7 +771,8 @@ export default class Connection extends Emitter {
    * @chainable
    */
   withBasicAuth (username, password) {
-    this._extendedQuery.basic = window.btoa(`${username}:${password}`)
+    // eslint-disable-next-line no-undef
+    this._extendedQuery.basic = hasWindow ? window.btoa(`${username}:${password}`) : btoa(`${username}:${password}`)
     return this
   }
 
